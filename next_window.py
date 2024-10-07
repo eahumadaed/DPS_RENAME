@@ -124,42 +124,41 @@ class NextWindow(QMainWindow):
                 self.pdf_listbox.setCurrentRow(last_index) 
                 self.load_pdf(self.pdf_paths[last_index])
                 
-    def cargar_titulos_anteriores(self):
-        #!!!
-        #!!! Cargar titulos anteriores desde la api
-        
-        # Ejemplo de carga
-        titulos_anteriores=[
-            {
-                "f_inscripcion":"12/12/2022",
-                "comuna":"Linares",
-                "cbr":"LINARES",
-                "foja":"123",
-                "vta": True,
-                "num": "122",
-                "anio":"2022"
-            },
-            {
-                "f_inscripcion":"11/11/1998",
-                "comuna":"Santiago",
-                "cbr":"SANTIAGO",
-                "foja":"1",
-                "vta": False,
-                "num": "1",
-                "anio":"1998"
-            }
-        ]
-        
-        for titulo in titulos_anteriores:
-            inscripcion = self.add_inscripcion()
-            inscripcion.set_f_inscripcion(titulo['f_inscripcion'])
-            inscripcion.set_comuna(titulo['comuna'])
-            inscripcion.set_cbr(titulo['cbr'])
-            inscripcion.set_foja(titulo['foja'])
-            inscripcion.set_vta(titulo['vta'])
-            inscripcion.set_numero(titulo['num'])
-            inscripcion.set_anio(titulo['anio'])
-        
+    def cargar_titulos_anteriores(self, trabajo_id):
+        try:
+            response = requests.get(f'{API_BASE_URL}getTitulosAnteriores&trabajo_id={trabajo_id}')
+            response.raise_for_status()
+            titulos_anteriores = response.json()
+            print(f"Cargar Titulos:{trabajo_id} - {titulos_anteriores}")
+            if not isinstance(titulos_anteriores, list):
+                return
+
+            for titulo in titulos_anteriores:
+                if not isinstance(titulo, dict):
+                    continue 
+
+                required_fields = ['id', 'f_inscripcion', 'comuna', 'cbr', 'foja', 'v', 'numero', 'anio']
+                if all(field in titulo for field in required_fields):
+                    inscripcion = self.add_inscripcion()
+                    inscripcion.set_id(titulo['id'])
+                    inscripcion.set_f_inscripcion(titulo['f_inscripcion'])
+                    inscripcion.set_comuna(titulo['comuna'])
+                    inscripcion.set_cbr(titulo['cbr'])
+                    inscripcion.set_foja(titulo['foja'])
+                    inscripcion.set_vta(titulo['v'])
+                    inscripcion.set_numero(titulo['numero'])
+                    inscripcion.set_anio(titulo['anio'])
+                else:
+                    continue
+
+        except requests.RequestException:
+            pass
+        except ValueError:
+            pass
+        except Exception:
+            pass
+
+
     
     def load_tipo(self, trabajo_id):
         try:
@@ -168,7 +167,7 @@ class NextWindow(QMainWindow):
             tipo_data = response.json()
             self.fill_tipo(tipo_data)
             if tipo_data['tipo_documento'] == "COMPRAVENTA":
-                self.cargar_titulos_anteriores()
+                self.cargar_titulos_anteriores(trabajo_id)
                 
         except requests.RequestException as e:
             self.show_message("Error", "Error al cargar tipo", str(e))
@@ -302,9 +301,10 @@ class NextWindow(QMainWindow):
         for layout_id, container_widget in self.inscripcion_layouts.items():
             inscripcion_widget = container_widget.layout().itemAt(0).widget()
             inscripciones.append(inscripcion_widget)
-        
+            
         for inscripcion in inscripciones:
             data = {
+                "id": inscripcion.get_id(),
                 "f_inscripcion": inscripcion.f_inscripcion,
                 "comuna": inscripcion.comuna,
                 "cbr":inscripcion.cbr,
@@ -391,33 +391,63 @@ class NextWindow(QMainWindow):
             
             tipo_documento = self.tipo_combo.currentText()
         
-            #!!!
-            #!!! NO SE PUEDE GUARDAR CON NONE
-            if tipo_documento == "--":
-                tipo_documento = None
-                
+            #!!! NO SE PUEDE GUARDAR CON NONE 
+            #Se maneja de informa interna cuando viene el "--"
+            # if tipo_documento == "--":
+            #     tipo_documento = None
+
             if tipo_documento == "COMPRAVENTA":
-                #!!!
                 #!!! GUARDAR TITULOS ANTERIORES EN BD
                 titulos_anteriores = self.get_all_inscripciones()
                 print(f"TITULOS ANTERIORES: {titulos_anteriores}")
-            
-            form_data = {'user_id': self.user_id, 'trabajo_id': self.current_trabajo_id, 'tipo_documento': tipo_documento}
-            
-            print(f"FORM DATA: {form_data}")
-            
-            try:
-                response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
-                response.raise_for_status()
-                self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
-                print("Formulario guardado:", form_data)
-                self.load_trabajos()
-                self.pdf_listbox.clear()
-                self.current_trabajo_id = None
-                self.dir_listwidget.setCurrentRow(0)
+                nuevos_titulos = [t for t in titulos_anteriores if t['id'] is None]
+                titulos_existentes = [t for t in titulos_anteriores if t['id'] is not None]
                 
-            except requests.RequestException as e:
-                self.show_message("Error", "Error al guardar formulario", str(e))
+                form_data = {
+                    'user_id': self.user_id,
+                    'trabajo_id': self.current_trabajo_id,
+                    'tipo_documento': tipo_documento,
+                    'nuevos_titulos': nuevos_titulos,
+                    'titulos_existentes': titulos_existentes
+                }
+                
+                print(f"FORM DATA: {form_data}")
+                
+                try:
+                    response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
+                    response.raise_for_status()
+                    self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
+                    print("Formulario guardado:", form_data)
+                    self.load_trabajos() 
+                    self.pdf_listbox.clear()
+                    self.current_trabajo_id = None
+                    self.dir_listwidget.setCurrentRow(0)
+                    
+                except requests.RequestException as e:
+                    self.show_message("Error", "Error al guardar formulario", str(e))
+            
+            else:
+                form_data = {
+                    'user_id': self.user_id,
+                    'trabajo_id': self.current_trabajo_id,
+                    'tipo_documento': tipo_documento
+                }
+                
+                print(f"FORM DATA: {form_data}")
+                
+                try:
+                    response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
+                    response.raise_for_status()
+                    self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
+                    print("Formulario guardado:", form_data)
+                    self.load_trabajos()
+                    self.pdf_listbox.clear()
+                    self.current_trabajo_id = None
+                    self.dir_listwidget.setCurrentRow(0)
+                    
+                except requests.RequestException as e:
+                    self.show_message("Error", "Error al guardar formulario", str(e))
+
 
     def show_message(self, message_type, title, message):
         msg_box = QMessageBox()

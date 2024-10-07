@@ -6,6 +6,7 @@ import re
 class Inscripcion(QWidget):
     def __init__(self):
         super().__init__() 
+        self.id = None
         self.f_inscripcion = ""
         self.comuna = ""
         self.cbr =  ""
@@ -16,7 +17,8 @@ class Inscripcion(QWidget):
         
         
         self.inicializar_ui()
-        
+
+
     def inicializar_ui(self):
         self.layout_f_inscripcion = QHBoxLayout()
         self.label_f_inscripcion = QLabel("F_INSCRIPCION")
@@ -147,27 +149,41 @@ class Inscripcion(QWidget):
         self.input_anio.setText(cleaned_text)
         self.input_anio.blockSignals(False)
         
-    def set_f_inscripcion(self, text):
-        self.input_f_inscripcion.setText(text)
-        
-    def set_comuna(self, text):
-        self.comuna_combo.setCurrentText(text)
+    def get_id(self):
+        return self.id
     
+    def set_id(self, id):
+        self.id = id
+        
+    def set_f_inscripcion(self, text):
+        self.f_inscripcion = text
+        self.input_f_inscripcion.setText(text)
+
+    def set_comuna(self, text):
+        self.comuna = text 
+        self.comuna_combo.setCurrentText(text)
+
     def set_cbr(self, text):
+        self.cbr = text
         self.input_cbr.setText(text)
-        
+
     def set_foja(self, text):
+        self.foja = text
         self.input_foja.setText(text)
-        
+
     def set_vta(self, valor):
+        self.vta = valor
         self.checkbox_vta.setChecked(valor)
-        
+
     def set_numero(self, text):
+        self.num = text
         self.input_num.setText(text)
-        
+
     def set_anio(self, text):
+        self.anio = text
         self.input_anio.setText(text)
         
+
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)  
