@@ -57,10 +57,6 @@ class NextWindow(QMainWindow):
         self.dir_finished_listwidget.itemSelectionChanged.connect(self.on_directory_select)
         self.left_layout.addWidget(self.dir_finished_listwidget)
 
-        self.update_button = QPushButton("Actualizar Lista", self)
-        self.update_button.clicked.connect(self.load_trabajos)
-        self.left_layout.addWidget(self.update_button)
-
         self.dir_label = QLabel("Seleccione PDF", self)
         self.left_layout.addWidget(self.dir_label)
         
