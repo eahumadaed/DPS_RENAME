@@ -47,13 +47,24 @@ class UserSelectionWindow(QWidget):
             users = response.json()
             for user in users:
                 user_info = f"{user['name']}"
-                self.user_select.addItem(user_info, user['id'])
+                trabajo_count = self.get_trabajo_count(user['id'])
+                self.user_select.addItem(f"{user_info} ({trabajo_count} Procesados)", user['id'])
         except requests.exceptions.RequestException as e:
             print(f"Error al obtener los usuarios: {e}")
             self.label.setText("Error al obtener los usuarios")
         except ValueError as e:
             print(f"Error al interpretar la respuesta: {e}")
             self.label.setText("Error al interpretar la respuesta")
+            
+    def get_trabajo_count(self, user_id):
+        try:
+            response = requests.get(f'https://loverman.net/dbase/dga2024/api/api.php?action=getTrabajoCount&user_id={user_id}', timeout=10)
+            response.raise_for_status()
+            res = response.json()
+            total = res['total']
+            return total
+        except requests.RequestException as e:
+            print(f"Error al obtener el conteo de los trabajos: {e}")
 
     def load_next_interface(self):
         selected_user_id = self.user_select.currentData()

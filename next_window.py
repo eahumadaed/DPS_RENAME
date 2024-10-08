@@ -16,7 +16,7 @@ class NextWindow(QMainWindow):
         self.inscripcion_layouts = {} 
         self.isCompraventa = False
 
-        self.setWindowTitle("DPs Formulario")
+        self.setWindowTitle("Clasificador DPs")
         self.setGeometry(1, 30, 1980, 1080)
         self.showMaximized()
 
@@ -30,6 +30,9 @@ class NextWindow(QMainWindow):
         self.create_left_frame()
         self.create_middle_frame()
         self.create_right_frame()
+        
+        if self.dir_listwidget.count() > 0:
+            self.dir_listwidget.setCurrentRow(0)
 
     def create_left_frame(self):
         self.left_frame = QFrame(self)
@@ -211,8 +214,8 @@ class NextWindow(QMainWindow):
         
         opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS"]
         
-        options_label = QLabel("Opciones:", self)
-        self.form_layout.addWidget(options_label)
+        atajos_label = QLabel("Atajos:", self)
+        self.form_layout.addWidget(atajos_label)
         left_options_layout = QVBoxLayout()
         right_options_layout = QVBoxLayout()
         options_layout = QHBoxLayout()
@@ -240,7 +243,6 @@ class NextWindow(QMainWindow):
         QShortcut(QKeySequence("3"), self, lambda: self.tipo_combo.setCurrentIndex(3))
         QShortcut(QKeySequence("4"), self, lambda: self.tipo_combo.setCurrentIndex(4))
         QShortcut(QKeySequence("5"), self, lambda: self.tipo_combo.setCurrentIndex(5))
-        QShortcut(QKeySequence("6"), self, lambda: self.tipo_combo.setCurrentIndex(6))
         
         self.save_button = QPushButton("Guardar", self)
         self.middle_layout.addWidget(self.save_button)
