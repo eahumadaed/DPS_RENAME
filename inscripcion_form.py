@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QCheckBox, QApplication, QMainWindow, QVBoxLayout, Q
 from PyQt5.QtCore import Qt
 import sys
 import re
+from comunas import Comunas_list
 
 class Inscripcion(QWidget):
     def __init__(self):
@@ -31,7 +32,7 @@ class Inscripcion(QWidget):
         self.layout_comuna = QHBoxLayout()
         self.label_comuna = QLabel("COMUNA")
         self.comuna_combo = QComboBox()
-        self.comuna_combo.addItems(["--", "Linares", "Santiago", "Doñihue"])
+        self.comuna_combo.addItems(Comunas_list)
         self.layout_comuna.addWidget(self.label_comuna)
         self.layout_comuna.addWidget(self.comuna_combo)
         self.comuna_combo.currentIndexChanged.connect(self.capturar_opcion_comuna)

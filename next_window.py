@@ -209,17 +209,17 @@ class NextWindow(QMainWindow):
 
         self.add_section_title("TIPO DE DOCUMENTO")
         
-        opciones = ["SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS"]
+        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS"]
         
         options_label = QLabel("Opciones:", self)
         self.form_layout.addWidget(options_label)
         left_options_layout = QVBoxLayout()
         right_options_layout = QVBoxLayout()
         options_layout = QHBoxLayout()
-        mitad_lista = len(opciones)//2 if  len(opciones)%2==0 else len(opciones)//2+1
-        for index, item in enumerate(opciones, start=1):
+        mitad_lista = len(opciones)/2 if  len(opciones)%2==0 else len(opciones)//2 + 1
+        for index, item in enumerate(opciones, start=0):
             label = QLabel(f"\t({index}) {item}")
-            if index <= mitad_lista:
+            if index < mitad_lista:
                 left_options_layout.addWidget(label)
             else:
                 right_options_layout.addWidget(label)
@@ -230,11 +230,11 @@ class NextWindow(QMainWindow):
         self.form_layout.addLayout(options_layout)
         
         self.tipo_combo = QComboBox()
-        self.tipo_combo.addItems(["--"] + opciones)
+        self.tipo_combo.addItems(opciones)
         self.tipo_combo.currentIndexChanged.connect(self.toggle_add_inscripcion)
         self.form_layout.addWidget(self.tipo_combo)
         
-
+        QShortcut(QKeySequence("0"), self, lambda: self.tipo_combo.setCurrentIndex(0))
         QShortcut(QKeySequence("1"), self, lambda: self.tipo_combo.setCurrentIndex(1))
         QShortcut(QKeySequence("2"), self, lambda: self.tipo_combo.setCurrentIndex(2))
         QShortcut(QKeySequence("3"), self, lambda: self.tipo_combo.setCurrentIndex(3))
@@ -340,6 +340,8 @@ class NextWindow(QMainWindow):
             self.section_title_2.show()
             self.add_inscripcion_button.show()
         else:
+            for layout_id in list(self.inscripcion_layouts.keys()): 
+                self.remove_inscripcion(layout_id)
             self.section_title_2.hide()
             self.add_inscripcion_button.hide()
 
@@ -390,14 +392,8 @@ class NextWindow(QMainWindow):
             print(f"TRABAJO ID: {self.current_trabajo_id}")
             
             tipo_documento = self.tipo_combo.currentText()
-        
-            #!!! NO SE PUEDE GUARDAR CON NONE 
-            #Se maneja de informa interna cuando viene el "--"
-            # if tipo_documento == "--":
-            #     tipo_documento = None
 
             if tipo_documento == "COMPRAVENTA":
-                #!!! GUARDAR TITULOS ANTERIORES EN BD
                 titulos_anteriores = self.get_all_inscripciones()
                 print(f"TITULOS ANTERIORES: {titulos_anteriores}")
                 nuevos_titulos = [t for t in titulos_anteriores if t['id'] is None]
@@ -410,22 +406,6 @@ class NextWindow(QMainWindow):
                     'nuevos_titulos': nuevos_titulos,
                     'titulos_existentes': titulos_existentes
                 }
-                
-                print(f"FORM DATA: {form_data}")
-                
-                try:
-                    response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
-                    response.raise_for_status()
-                    self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
-                    print("Formulario guardado:", form_data)
-                    self.load_trabajos() 
-                    self.pdf_listbox.clear()
-                    self.current_trabajo_id = None
-                    self.dir_listwidget.setCurrentRow(0)
-                    
-                except requests.RequestException as e:
-                    self.show_message("Error", "Error al guardar formulario", str(e))
-            
             else:
                 form_data = {
                     'user_id': self.user_id,
@@ -435,18 +415,22 @@ class NextWindow(QMainWindow):
                 
                 print(f"FORM DATA: {form_data}")
                 
-                try:
-                    response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
-                    response.raise_for_status()
-                    self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
-                    print("Formulario guardado:", form_data)
-                    self.load_trabajos()
-                    self.pdf_listbox.clear()
-                    self.current_trabajo_id = None
+            try:
+                response = requests.post(f'{API_BASE_URL}saveTipo', json=form_data)
+                response.raise_for_status()
+                self.show_message("Info", "Guardar", "Formulario guardado exitosamente.")
+                print("Formulario guardado:", form_data)
+                self.load_trabajos() 
+                self.pdf_listbox.clear()
+                self.current_trabajo_id = None
+                if self.dir_listwidget.count() > 0:
                     self.dir_listwidget.setCurrentRow(0)
-                    
-                except requests.RequestException as e:
-                    self.show_message("Error", "Error al guardar formulario", str(e))
+                else:
+                    self.browser.setHtml("<html><body></body></html>") 
+
+                
+            except requests.RequestException as e:
+                self.show_message("Error", "Error al guardar formulario", str(e))
 
 
     def show_message(self, message_type, title, message):
