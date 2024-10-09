@@ -258,6 +258,17 @@ class NextWindow(QMainWindow):
         self.section_title_2.setStyleSheet("font-weight: bold; font-size: 16px;")
         self.form_layout.addWidget(self.section_title_2)
         self.add_inscripcion_button = QPushButton("Agregar inscripción", self)
+        self.add_inscripcion_button.setStyleSheet("""
+            QPushButton {
+                background-color: #f0f0f0;  
+                border: 1px solid #ccc;
+                padding: 5px;
+            }
+            QPushButton:focus {
+                background-color: #e6f7ff;  
+                border: 1px solid #3399ff;  
+            }
+        """)
         self.form_layout.addWidget(self.add_inscripcion_button)
         self.add_inscripcion_button.clicked.connect(self.add_inscripcion)
         
@@ -271,6 +282,9 @@ class NextWindow(QMainWindow):
     def handle_enter(self):
         if self.tipo_combo.currentText() != "COMPRAVENTA":
             self.save_form()
+        else:
+            if self.add_inscripcion_button.hasFocus():
+                self.add_inscripcion()
         
     def add_inscripcion(self):
         self.form_layout.removeWidget(self.add_inscripcion_button)
