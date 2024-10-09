@@ -2,14 +2,11 @@ from PyQt5.QtWidgets import QCheckBox, QApplication, QMainWindow, QVBoxLayout, Q
 from PyQt5.QtCore import Qt
 import sys
 import re
-from comunas import Comunas_list
 
 class Inscripcion(QWidget):
     def __init__(self):
         super().__init__() 
         self.id = None
-        self.f_inscripcion = ""
-        self.comuna = ""
         self.cbr =  ""
         self.foja = ""
         self.vta = False
@@ -21,21 +18,6 @@ class Inscripcion(QWidget):
 
 
     def inicializar_ui(self):
-        self.layout_f_inscripcion = QHBoxLayout()
-        self.label_f_inscripcion = QLabel("F_INSCRIPCION")
-        self.input_f_inscripcion = QLineEdit()
-        self.input_f_inscripcion.setPlaceholderText("--/--/----")
-        self.layout_f_inscripcion.addWidget(self.label_f_inscripcion)
-        self.layout_f_inscripcion.addWidget(self.input_f_inscripcion)
-        self.input_f_inscripcion.textChanged.connect(self.format_date_input)
-        
-        self.layout_comuna = QHBoxLayout()
-        self.label_comuna = QLabel("COMUNA")
-        self.comuna_combo = QComboBox()
-        self.comuna_combo.addItems(Comunas_list)
-        self.layout_comuna.addWidget(self.label_comuna)
-        self.layout_comuna.addWidget(self.comuna_combo)
-        self.comuna_combo.currentIndexChanged.connect(self.capturar_opcion_comuna)
         
         self.layout_cbr = QHBoxLayout()
         self.label_cbr =  QLabel("CBR")
@@ -71,8 +53,6 @@ class Inscripcion(QWidget):
         self.input_anio.textChanged.connect(self.allow_only_four_digits)
         
         self.vLayout = QVBoxLayout()
-        self.vLayout.addLayout(self.layout_f_inscripcion)
-        self.vLayout.addLayout(self.layout_comuna)
         self.vLayout.addLayout(self.layout_cbr)
         self.vLayout.addLayout(self.layout_foja)
         
@@ -98,30 +78,9 @@ class Inscripcion(QWidget):
     def capturar_estado_vta(self, state):
         self.vta = (state == Qt.Checked)  
         
-    def capturar_opcion_comuna(self, index):
-        self.comuna = self.comuna_combo.currentText() 
-        
     def capture_cbr(self, text):
         cleaned_text = text.upper()
         self.cbr = cleaned_text
-
-    def format_date_input(self, text):
-        cleaned_text = re.sub(r'\D', '', text)
-
-        if len(cleaned_text) >= 6:
-            formatted_date = f"{cleaned_text[:2]}/{cleaned_text[2:4]}/{cleaned_text[4:8]}"
-        elif len(cleaned_text) >= 4:
-            formatted_date = f"{cleaned_text[:2]}/{cleaned_text[2:4]}/{cleaned_text[4:]}"
-        elif len(cleaned_text) >= 2:
-            formatted_date = f"{cleaned_text[:2]}/{cleaned_text[2:]}"
-        else:
-            formatted_date = cleaned_text
-            
-        self.f_inscripcion = formatted_date
-
-        self.input_f_inscripcion.blockSignals(True)
-        self.input_f_inscripcion.setText(formatted_date)
-        self.input_f_inscripcion.blockSignals(False)
 
     def allow_only_numbers(self, text):
         cleaned_text = re.sub(r'\D', '', text)
@@ -155,14 +114,6 @@ class Inscripcion(QWidget):
     
     def set_id(self, id):
         self.id = id
-        
-    def set_f_inscripcion(self, text):
-        self.f_inscripcion = text
-        self.input_f_inscripcion.setText(text)
-
-    def set_comuna(self, text):
-        self.comuna = text 
-        self.comuna_combo.setCurrentText(text)
 
     def set_cbr(self, text):
         self.cbr = text

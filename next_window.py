@@ -140,12 +140,10 @@ class NextWindow(QMainWindow):
                 if not isinstance(titulo, dict):
                     continue 
 
-                required_fields = ['id', 'f_inscripcion', 'comuna', 'cbr', 'foja', 'v', 'numero', 'anio']
+                required_fields = ['id', 'cbr', 'foja', 'v', 'numero', 'anio']
                 if all(field in titulo for field in required_fields):
                     inscripcion = self.add_inscripcion()
                     inscripcion.set_id(titulo['id'])
-                    inscripcion.set_f_inscripcion(titulo['f_inscripcion'])
-                    inscripcion.set_comuna(titulo['comuna'])
                     inscripcion.set_cbr(titulo['cbr'])
                     inscripcion.set_foja(titulo['foja'])
                     inscripcion.set_vta(titulo['v'])
@@ -237,12 +235,13 @@ class NextWindow(QMainWindow):
         self.tipo_combo.currentIndexChanged.connect(self.toggle_add_inscripcion)
         self.form_layout.addWidget(self.tipo_combo)
         
-        QShortcut(QKeySequence("0"), self, lambda: self.tipo_combo.setCurrentIndex(0))
-        QShortcut(QKeySequence("1"), self, lambda: self.tipo_combo.setCurrentIndex(1))
-        QShortcut(QKeySequence("2"), self, lambda: self.tipo_combo.setCurrentIndex(2))
-        QShortcut(QKeySequence("3"), self, lambda: self.tipo_combo.setCurrentIndex(3))
-        QShortcut(QKeySequence("4"), self, lambda: self.tipo_combo.setCurrentIndex(4))
-        QShortcut(QKeySequence("5"), self, lambda: self.tipo_combo.setCurrentIndex(5))
+        QShortcut(QKeySequence("0"), self, lambda: self.use_shortcuts(0))
+        QShortcut(QKeySequence("1"), self, lambda: self.use_shortcuts(1))
+        QShortcut(QKeySequence("2"), self, lambda: self.use_shortcuts(2))
+        QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(3))
+        QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(4))
+        QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(5))
+        
         
         self.save_button = QPushButton("Guardar", self)
         self.middle_layout.addWidget(self.save_button)
@@ -262,6 +261,10 @@ class NextWindow(QMainWindow):
         
         self.section_title_2.hide()
         self.add_inscripcion_button.hide()
+        
+    def use_shortcuts(self, key):
+        if len(self.inscripcion_layouts)==0:
+            self.tipo_combo.setCurrentIndex(key)
     
     def handle_enter(self):
         if self.tipo_combo.currentText() != "COMPRAVENTA":
@@ -307,8 +310,6 @@ class NextWindow(QMainWindow):
         for inscripcion in inscripciones:
             data = {
                 "id": inscripcion.get_id(),
-                "f_inscripcion": inscripcion.f_inscripcion,
-                "comuna": inscripcion.comuna,
                 "cbr":inscripcion.cbr,
                 "foja":inscripcion.foja,
                 "vta":inscripcion.vta,
