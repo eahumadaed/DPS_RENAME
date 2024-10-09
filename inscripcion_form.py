@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QCheckBox, QApplication, QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QCheckBox, QApplication, QMainWindow, QVBoxLayout, QWidget, QHBoxLayout, QLabel, QLineEdit, QCompleter
 from PyQt5.QtCore import Qt
 import sys
 import re
+from comunas import Comunas_list
+
 
 class Inscripcion(QWidget):
     def __init__(self):
@@ -13,18 +15,27 @@ class Inscripcion(QWidget):
         self.num = ""
         self.anio = ""
         
-        
         self.inicializar_ui()
 
-
     def inicializar_ui(self):
+        
+        comunas_formatted_list = [
+            comuna.upper().replace('Á', 'A').replace('É', 'E').replace('Í', 'I').replace('Ó', 'O').replace('Ú', 'U')
+            for comuna in Comunas_list
+        ]
+        
+        self.completer = QCompleter(comunas_formatted_list)
+        self.completer.setCompletionMode(QCompleter.InlineCompletion)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         
         self.layout_cbr = QHBoxLayout()
         self.label_cbr =  QLabel("CBR")
         self.input_cbr = QLineEdit()
+        self.input_cbr.setCompleter(self.completer)
         self.layout_cbr.addWidget(self.label_cbr)
         self.layout_cbr.addWidget(self.input_cbr)
         self.input_cbr.textChanged.connect(self.capture_cbr)
+        self.input_cbr.returnPressed.connect(self.select_completion)
         
         self.layout_foja = QHBoxLayout()
         self.label_foja = QLabel("FOJA")
@@ -71,6 +82,11 @@ class Inscripcion(QWidget):
         self.inscripcion_layout.addWidget(self.layoutContainer1)
     
         self.setLayout(self.inscripcion_layout)
+    
+    def select_completion(self):
+        if self.completer.completionCount() > 0:
+            self.input_cbr.setText(self.completer.currentCompletion())
+            self.completer.popup().hide()
         
     def on_delete(self):
         None
@@ -79,7 +95,18 @@ class Inscripcion(QWidget):
         self.vta = (state == Qt.Checked)  
         
     def capture_cbr(self, text):
+        
         cleaned_text = text.upper()
+        cleaned_text = (cleaned_text
+            .replace('Á', 'A')
+            .replace('É', 'E')
+            .replace('Í', 'I')
+            .replace('Ó', 'O')
+            .replace('Ú', 'U')
+        )
+        self.input_cbr.blockSignals(True)
+        self.input_cbr.setText(cleaned_text)
+        self.input_cbr.blockSignals(False)
         self.cbr = cleaned_text
 
     def allow_only_numbers(self, text):

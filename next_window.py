@@ -97,7 +97,6 @@ class NextWindow(QMainWindow):
                 self.load_pdf(pdf_path)
             
     def on_directory_select(self):
-        # Decidir si mostrar boton para agregar inscripcion
         self.toggle_add_inscripcion()
         
         # Eliminar inscripciones
@@ -212,7 +211,7 @@ class NextWindow(QMainWindow):
 
         self.add_section_title("TIPO DE DOCUMENTO")
         
-        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS"]
+        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS", "SIN DOC. AGUAS"]
         
         atajos_label = QLabel("Atajos:", self)
         self.form_layout.addWidget(atajos_label)
@@ -243,6 +242,7 @@ class NextWindow(QMainWindow):
         QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(3))
         QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(4))
         QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(5))
+        QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(6))
         
         
         self.save_button = QPushButton("Guardar", self)
@@ -299,6 +299,8 @@ class NextWindow(QMainWindow):
         
         delete_button.clicked.connect(lambda: self.remove_inscripcion(layout_id))
         
+        self.new_inscripcion_widget.input_cbr.setFocus()
+        
         return self.new_inscripcion_widget
         
     def get_all_inscripciones(self):
@@ -344,6 +346,7 @@ class NextWindow(QMainWindow):
         if self.isCompraventa:
             self.section_title_2.show()
             self.add_inscripcion_button.show()
+            self.add_inscripcion_button.setFocus()
         else:
             for layout_id in list(self.inscripcion_layouts.keys()): 
                 self.remove_inscripcion(layout_id)
