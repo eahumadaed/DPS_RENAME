@@ -9,14 +9,15 @@ from inscripcion_form import Inscripcion
 API_BASE_URL = 'https://loverman.net/dbase/dga2024/api/api.php?action='
 
 class NextWindow(QMainWindow):
-    def __init__(self, user_id):
+    def __init__(self, user_id, user_name):
         super().__init__()
         self.user_id = user_id
+        self.user_name = user_name
         self.current_trabajo_id = None
         self.inscripcion_layouts = {} 
         self.isCompraventa = False
 
-        self.setWindowTitle("Clasificador DPs")
+        self.setWindowTitle(f"Clasificador DPs ({self.user_name})")
         self.setGeometry(1, 30, 1980, 1080)
         self.showMaximized()
 
@@ -77,7 +78,7 @@ class NextWindow(QMainWindow):
             response.raise_for_status()
             trabajos = response.json()
             for trabajo in trabajos:
-                item = QListWidgetItem(f"{trabajo['numero']} - {trabajo['anio']} ({trabajo['estado']})")
+                item = QListWidgetItem(f"{trabajo['numero']}- {trabajo['anio']} ({trabajo['estado']})")
                 item.setData(Qt.UserRole, trabajo['id'])
                 if trabajo['estado'] == None:
                     self.dir_listwidget.addItem(item)
@@ -118,6 +119,7 @@ class NextWindow(QMainWindow):
             selected_trabajo_id = selected_item.data(Qt.UserRole)
 
             self.current_trabajo_id = selected_trabajo_id
+            print(f"Trabajo ID: {self.current_trabajo_id}")
 
             self.load_tipo(selected_trabajo_id)
             self.load_pdfs(selected_trabajo_id)
@@ -448,6 +450,6 @@ class NextWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    main_window = NextWindow(user_id=1)
+    main_window = NextWindow(user_id=1, user_name="Usuario de prueba")
     main_window.show()
     sys.exit(app.exec_())

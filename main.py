@@ -46,9 +46,9 @@ class UserSelectionWindow(QWidget):
             response.raise_for_status()
             users = response.json()
             for user in users:
-                user_info = f"{user['name']}"
+                user_info = {"user_name": user['name'], "user_id": user['id']}
                 trabajo_count = self.get_trabajo_count(user['id'])
-                self.user_select.addItem(f"{user_info} ({trabajo_count} Procesados)", user['id'])
+                self.user_select.addItem(f"{user_info['user_name']} ({trabajo_count} Procesados)", user_info)
         except requests.exceptions.RequestException as e:
             print(f"Error al obtener los usuarios: {e}")
             self.label.setText("Error al obtener los usuarios")
@@ -67,10 +67,10 @@ class UserSelectionWindow(QWidget):
             print(f"Error al obtener el conteo de los trabajos: {e}")
 
     def load_next_interface(self):
-        selected_user_id = self.user_select.currentData()
-        print(f"ID del usuario seleccionado: {selected_user_id}")
+        user_info = self.user_select.currentData()
+        print(f"ID del usuario seleccionado: {user_info['user_id']}")
         self.close()
-        self.next_window = NextWindow(selected_user_id)
+        self.next_window = NextWindow(user_id=user_info['user_id'], user_name=user_info['user_name'])
         self.next_window.showMaximized()
 
     def center_window(self):
