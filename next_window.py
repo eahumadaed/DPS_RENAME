@@ -211,7 +211,7 @@ class NextWindow(QMainWindow):
 
         self.add_section_title("TIPO DE DOCUMENTO")
         
-        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "OTROS", "SIN DOC. AGUAS"]
+        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "HERENCIA", "OTROS", "SIN DOC. AGUAS"]
         
         atajos_label = QLabel("Atajos:", self)
         self.form_layout.addWidget(atajos_label)
@@ -243,6 +243,7 @@ class NextWindow(QMainWindow):
         QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(4))
         QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(5))
         QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(6))
+        QShortcut(QKeySequence("7"), self, lambda: self.use_shortcuts(7))
         
         
         self.save_button = QPushButton("Guardar", self)
