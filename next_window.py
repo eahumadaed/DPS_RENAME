@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QListWidget, QPushButton, QLabel, QScrollArea, QComboBox, QMessageBox, QListWidgetItem, QSplitter, QShortcut
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QListWidget, QPushButton, QLabel, QScrollArea, QComboBox, QMessageBox, QListWidgetItem, QSplitter, QShortcut
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl, Qt
 from PyQt5.QtGui import QKeySequence
@@ -11,6 +11,7 @@ API_BASE_URL = 'https://loverman.net/dbase/dga2024/api/api.php?action='
 class NextWindow(QMainWindow):
     def __init__(self, user_id, user_name):
         super().__init__()
+        self.viewer_url = "https://www.dataresearch.cl/repositorio_dps_2024/viewerv2.html"
         self.user_id = user_id
         self.user_name = user_name
         self.current_trabajo_id = None
@@ -379,13 +380,21 @@ class NextWindow(QMainWindow):
         self.layout.addWidget(self.right_frame, stretch=1)
 
         self.right_layout = QVBoxLayout(self.right_frame)
-        self.splitter = QSplitter(Qt.Vertical)
-        self.right_layout.addWidget(self.splitter, stretch=1)
+        self.right_layout.setContentsMargins(0, 0, 0, 0)
+        self.right_layout.setSpacing(0)
+        
+        self.options_layout = QHBoxLayout()
+        
+        self.viewer_combo = QComboBox()
+        self.viewer_combo.addItems(["Visor nuevo", "Visor antiguo"])
+        self.viewer_combo.currentIndexChanged.connect(self.on_viewer_changed)
+        self.viewer_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.options_layout.addWidget(self.viewer_combo, alignment=Qt.AlignRight)
+        
+        self.right_layout.addLayout(self.options_layout)
 
         self.browser = QWebEngineView()
-        self.splitter.addWidget(self.browser)
-
-        self.splitter.setSizes([800, 400])
+        self.right_layout.addWidget(self.browser)
 
     def load_pdfs(self, trabajo_id):
         try:
@@ -402,10 +411,35 @@ class NextWindow(QMainWindow):
 
     def load_pdf(self, encoded_pdf_path):
         try:
-            pdf_url = f"https://loverman.net/dbase/dga2024/viewer.html?file={encoded_pdf_path}#page=1"
+            pdf_url = f"{self.viewer_url}?file={encoded_pdf_path}#page=1"
             self.browser.load(QUrl(pdf_url))
         except Exception as e:
             self.show_message("Error", "Error al cargar PDF", str(e))
+            
+    def on_viewer_changed(self):
+        option = self.viewer_combo.currentText()
+        
+        if option == "Visor nuevo":
+            self.browser.ignoreZoom = True
+            viewer_url = "https://www.dataresearch.cl/repositorio_dps_2024/viewerv2.html"
+        elif option == "Visor antiguo":
+            self.browser.ignoreZoom = False
+            viewer_url = "https://www.dataresearch.cl/repositorio_dps_2024/viewerv1.html"
+        else:
+            viewer_url = self.viewer_url
+            
+        print(viewer_url)
+        
+        if self.viewer_url!=viewer_url:
+            self.viewer_url = viewer_url
+            selected_items = self.pdf_listbox.selectedItems()
+            if selected_items:
+                selected_item = selected_items[0]
+                index = self.pdf_listbox.row(selected_item)
+                pdf_url = self.pdf_paths[index]
+                print(f"PDF seleccionado: {pdf_url}")
+                self.load_pdf(pdf_url)
+        
 
     def clear_form(self):
         self.tipo_combo.setCurrentIndex(0)
