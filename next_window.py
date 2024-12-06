@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSizePolicy, QVBoxLayout, QWidget, QFrame, QHBoxLayout, QListWidget, QPushButton, QLabel, QScrollArea, QComboBox, QMessageBox, QListWidgetItem, QSplitter, QShortcut
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QBrush, QColor
 import requests
 import sys
 from inscripcion_form import Inscripcion
@@ -212,7 +212,7 @@ class NextWindow(QMainWindow):
 
         self.add_section_title("TIPO DE DOCUMENTO")
         
-        opciones = ["--","SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "HERENCIA", "OTROS", "SIN DOC. AGUAS"]
+        opciones = ["SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "HERENCIA", "OTROS", "SIN DOC. AGUAS", "CERTIFICADO VIGENCIA", "INSCRIPCION DAÑADA"]
         
         atajos_label = QLabel("Atajos:", self)
         self.form_layout.addWidget(atajos_label)
@@ -220,9 +220,9 @@ class NextWindow(QMainWindow):
         right_options_layout = QVBoxLayout()
         options_layout = QHBoxLayout()
         mitad_lista = len(opciones)/2 if  len(opciones)%2==0 else len(opciones)//2 + 1
-        for index, item in enumerate(opciones, start=0):
+        for index, item in enumerate(opciones, start=1):
             label = QLabel(f"\t({index}) {item}")
-            if index < mitad_lista:
+            if index-1 < mitad_lista:
                 left_options_layout.addWidget(label)
             else:
                 right_options_layout.addWidget(label)
@@ -237,14 +237,15 @@ class NextWindow(QMainWindow):
         self.tipo_combo.currentIndexChanged.connect(self.toggle_add_inscripcion)
         self.form_layout.addWidget(self.tipo_combo)
         
-        QShortcut(QKeySequence("0"), self, lambda: self.use_shortcuts(0))
-        QShortcut(QKeySequence("1"), self, lambda: self.use_shortcuts(1))
-        QShortcut(QKeySequence("2"), self, lambda: self.use_shortcuts(2))
-        QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(3))
-        QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(4))
-        QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(5))
-        QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(6))
-        QShortcut(QKeySequence("7"), self, lambda: self.use_shortcuts(7))
+        QShortcut(QKeySequence("1"), self, lambda: self.use_shortcuts(0))
+        QShortcut(QKeySequence("2"), self, lambda: self.use_shortcuts(1))
+        QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(2))
+        QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(3))
+        QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(4))
+        QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(5))
+        QShortcut(QKeySequence("7"), self, lambda: self.use_shortcuts(6))
+        QShortcut(QKeySequence("8"), self, lambda: self.use_shortcuts(7))
+        QShortcut(QKeySequence("9"), self, lambda: self.use_shortcuts(8))
         
         
         self.save_button = QPushButton("Guardar", self)
@@ -403,8 +404,12 @@ class NextWindow(QMainWindow):
             pdfs = response.json()
             self.pdf_listbox.clear()
             self.pdf_paths = []
-            for pdf in pdfs:
-                self.pdf_listbox.addItem(pdf['nombre'])
+            
+            for index, pdf in enumerate(pdfs):
+                item = QListWidgetItem(pdf['nombre'])
+                if pdf['num_paginas'] is None:
+                    item.setForeground(QBrush(QColor("red")))
+                self.pdf_listbox.addItem(item)
                 self.pdf_paths.append(pdf['ruta'])
         except requests.RequestException as e:
             self.show_message("Error", "Error al cargar PDFs", str(e))
@@ -442,7 +447,7 @@ class NextWindow(QMainWindow):
         
 
     def clear_form(self):
-        self.tipo_combo.setCurrentIndex(0)
+        self.tipo_combo.setCurrentIndex(-1)
     
     def save_form(self):
         if self.current_trabajo_id is not None:
