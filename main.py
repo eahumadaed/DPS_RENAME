@@ -47,8 +47,7 @@ class UserSelectionWindow(QWidget):
             users = response.json()
             for user in users:
                 user_info = {"user_name": user['name'], "user_id": user['id']}
-                trabajo_count = self.get_trabajo_count(user['id'])
-                self.user_select.addItem(f"{user_info['user_name']} ({trabajo_count} Procesados)", user_info)
+                self.user_select.addItem(f"{user_info['user_name']}", user_info)
         except requests.exceptions.RequestException as e:
             print(f"Error al obtener los usuarios: {e}")
             self.label.setText("Error al obtener los usuarios")

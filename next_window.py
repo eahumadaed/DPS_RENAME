@@ -18,7 +18,7 @@ class NextWindow(QMainWindow):
         self.inscripcion_layouts = {} 
         self.isCompraventa = False
 
-        self.setWindowTitle(f"Clasificador DPs ({self.user_name})")
+        self.setTitle()
         self.setGeometry(1, 30, 1980, 1080)
         self.showMaximized()
 
@@ -48,19 +48,19 @@ class NextWindow(QMainWindow):
         self.left_layout.addWidget(self.dir_label)
 
         self.dir_listwidget = QListWidget(self)
-        self.dir_listwidget.setMaximumHeight(150)
+        self.dir_listwidget.setMaximumHeight(300)
         self.dir_listwidget.name = "Por procesar"
         self.dir_listwidget.itemSelectionChanged.connect(self.on_directory_select)
         self.left_layout.addWidget(self.dir_listwidget)
         
-        self.dir_finished_label = QLabel("Trabajos terminados", self)
-        self.left_layout.addWidget(self.dir_finished_label)
+        #self.dir_finished_label = QLabel("Trabajos terminados", self)
+        #self.left_layout.addWidget(self.dir_finished_label)
         
-        self.dir_finished_listwidget = QListWidget(self)
-        self.dir_finished_listwidget.setMaximumHeight(150)
-        self.dir_finished_listwidget.name = "Finalizado"
-        self.dir_finished_listwidget.itemSelectionChanged.connect(self.on_directory_select)
-        self.left_layout.addWidget(self.dir_finished_listwidget)
+        #self.dir_finished_listwidget = QListWidget(self)
+        #self.dir_finished_listwidget.setMaximumHeight(150)
+        #self.dir_finished_listwidget.name = "Finalizado"
+        #self.dir_finished_listwidget.itemSelectionChanged.connect(self.on_directory_select)
+        #self.left_layout.addWidget(self.dir_finished_listwidget)
 
         self.dir_label = QLabel("Seleccione PDF", self)
         self.left_layout.addWidget(self.dir_label)
@@ -74,7 +74,7 @@ class NextWindow(QMainWindow):
     def load_trabajos(self):
         try:
             self.dir_listwidget.clear()
-            self.dir_finished_listwidget.clear()
+            #self.dir_finished_listwidget.clear()
             response = requests.get(f'{API_BASE_URL}getTrabajosTipo&user_id={self.user_id}')
             response.raise_for_status()
             trabajos = response.json()
@@ -83,8 +83,8 @@ class NextWindow(QMainWindow):
                 item.setData(Qt.UserRole, trabajo['id'])
                 if trabajo['estado'] == None:
                     self.dir_listwidget.addItem(item)
-                else:
-                    self.dir_finished_listwidget.addItem(item)
+                #else:
+                    #self.dir_finished_listwidget.addItem(item)
         except requests.RequestException as e:
             self.show_message("Error", "Error al cargar trabajos", str(e))
             
@@ -110,8 +110,8 @@ class NextWindow(QMainWindow):
         widget_name = getattr(sender_widget, 'name', 'Desconocido')
         if widget_name == "Finalizado":
             self.dir_listwidget.clearSelection() 
-        if widget_name == "Por procesar":
-            self.dir_finished_listwidget.clearSelection() 
+        #if widget_name == "Por procesar":
+            #self.dir_finished_listwidget.clearSelection() 
             
         selected_items = sender_widget.selectedItems()
         if selected_items:
@@ -212,7 +212,7 @@ class NextWindow(QMainWindow):
 
         self.add_section_title("TIPO DE DOCUMENTO")
         
-        opciones = ["SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "HERENCIA", "OTROS", "SIN DOC. AGUAS", "CERTIFICADO VIGENCIA", "INSCRIPCION DAÑADA"]
+        opciones = ["NO SE LEE", "SENTENCIA", "RESOLUCION DGA", "COMPRAVENTA", "COMUNIDAD DE AGUAS", "HERENCIA", "OTROS", "SIN DOC. AGUAS", "CERTIFICADO VIGENCIA", "INSCRIPCION DAÑADA"]
         
         atajos_label = QLabel("Atajos:", self)
         self.form_layout.addWidget(atajos_label)
@@ -220,9 +220,9 @@ class NextWindow(QMainWindow):
         right_options_layout = QVBoxLayout()
         options_layout = QHBoxLayout()
         mitad_lista = len(opciones)/2 if  len(opciones)%2==0 else len(opciones)//2 + 1
-        for index, item in enumerate(opciones, start=1):
+        for index, item in enumerate(opciones, start=0):
             label = QLabel(f"\t({index}) {item}")
-            if index-1 < mitad_lista:
+            if index < mitad_lista:
                 left_options_layout.addWidget(label)
             else:
                 right_options_layout.addWidget(label)
@@ -237,15 +237,16 @@ class NextWindow(QMainWindow):
         self.tipo_combo.currentIndexChanged.connect(self.toggle_add_inscripcion)
         self.form_layout.addWidget(self.tipo_combo)
         
-        QShortcut(QKeySequence("1"), self, lambda: self.use_shortcuts(0))
-        QShortcut(QKeySequence("2"), self, lambda: self.use_shortcuts(1))
-        QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(2))
-        QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(3))
-        QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(4))
-        QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(5))
-        QShortcut(QKeySequence("7"), self, lambda: self.use_shortcuts(6))
-        QShortcut(QKeySequence("8"), self, lambda: self.use_shortcuts(7))
-        QShortcut(QKeySequence("9"), self, lambda: self.use_shortcuts(8))
+        QShortcut(QKeySequence("0"), self, lambda: self.use_shortcuts(0))
+        QShortcut(QKeySequence("1"), self, lambda: self.use_shortcuts(1))
+        QShortcut(QKeySequence("2"), self, lambda: self.use_shortcuts(2))
+        QShortcut(QKeySequence("3"), self, lambda: self.use_shortcuts(3))
+        QShortcut(QKeySequence("4"), self, lambda: self.use_shortcuts(4))
+        QShortcut(QKeySequence("5"), self, lambda: self.use_shortcuts(5))
+        QShortcut(QKeySequence("6"), self, lambda: self.use_shortcuts(6))
+        QShortcut(QKeySequence("7"), self, lambda: self.use_shortcuts(7))
+        QShortcut(QKeySequence("8"), self, lambda: self.use_shortcuts(8))
+        QShortcut(QKeySequence("9"), self, lambda: self.use_shortcuts(9))
         
         
         self.save_button = QPushButton("Guardar", self)
@@ -448,6 +449,21 @@ class NextWindow(QMainWindow):
 
     def clear_form(self):
         self.tipo_combo.setCurrentIndex(-1)
+        
+    def setTitle(self):
+        print("CAMBIANDO")
+        procesados_count =  self.get_procesados_count(self.user_id)
+        self.setWindowTitle(f"Clasificador DPs ({self.user_name}) - {procesados_count} Clasificados")
+        
+    def get_procesados_count(self, user_id):
+        try:
+            response = requests.get(f'https://loverman.net/dbase/dga2024/api/api.php?action=getTrabajoCount&user_id={user_id}', timeout=10)
+            response.raise_for_status()
+            res = response.json()
+            total = res['total']
+            return total
+        except requests.RequestException as e:
+            print(f"Error al obtener el conteo de los trabajos: {e}")
     
     def save_form(self):
         if self.current_trabajo_id is not None:
@@ -489,6 +505,7 @@ class NextWindow(QMainWindow):
                     self.dir_listwidget.setCurrentRow(0)
                 else:
                     self.browser.setHtml("<html><body></body></html>") 
+                self.setTitle()
 
                 
             except requests.RequestException as e:
